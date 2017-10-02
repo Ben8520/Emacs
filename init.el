@@ -5,7 +5,10 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (evil company vimish-fold autopair helm sublime-themes))))
+    (helm-projectile highlight-symbol ggtags helm-gtags evil company vimish-fold autopair helm sublime-themes)))
+ '(safe-local-variable-values
+   (quote
+    ((company-clang-arguments "-I/home/ben/net-snmp-code/include/")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -130,9 +133,40 @@ buffer is not visiting a file."
 
 (helm-mode 1)
 
+;; Helm GTAGS
+(setq
+ helm-gtags-ignore-case t
+ helm-gtags-auto-update t
+ helm-gtags-use-input-at-cursor t
+ helm-gtags-pulse-at-cursor t
+ helm-gtags-prefix-key "\C-cg"
+ helm-gtags-suggested-key-mapping t
+ )
+
+(require 'helm-gtags)
+;; Enable helm-gtags-mode
+(add-hook 'dired-mode-hook 'helm-gtags-mode)
+(add-hook 'eshell-mode-hook 'helm-gtags-mode)
+(add-hook 'c-mode-hook 'helm-gtags-mode)
+(add-hook 'c++-mode-hook 'helm-gtags-mode)
+(add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+(define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
+(define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
+(define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
+(define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
+(define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+(define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
+
 ;; Autopair
 (require 'autopair)
 (autopair-global-mode t)
+
+;; Compile
+(global-set-key (kbd "<f5>") (lambda ()
+                               (interactive)
+                               (setq-local compilation-read-command nil)
+                               (call-interactively 'compile)))
 
 ;; ;; Predictive Mode
 ;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive")
@@ -180,8 +214,26 @@ buffer is not visiting a file."
 ;; (add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
 ;; (setq outline-minor-mode-prefix "\C-c \C-o")
 
+;; Terminal
+(defun bash (buffer-name)
+  "Start a terminal and rename buffer."
+  (interactive "sBuffer name: ")
+  (term "/bin/bash")
+  (rename-buffer buffer-name t))
+
+;; Vimish Fold
+(global-set-key (kbd "C-x v f") #'vimish-fold)
+(global-set-key (kbd "C-x v v") #'vimish-fold-delete)
+
 ;; Company mode
 (add-hook 'after-init-hook 'global-company-mode)
+
+;; Highlight Mode
+(require 'highlight-symbol)
+(global-set-key [(control f3)] 'highlight-symbol)
+(global-set-key [f3] 'highlight-symbol-next)
+(global-set-key [(shift f3)] 'highlight-symbol-prev)
+(global-set-key [(meta f3)] 'highlight-symbol-query-replace)
 
 ;; Final Message
 (message "---> .emacs loaded <---")
