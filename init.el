@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (whitespace-cleanup-mode highlight-thing focus helm-swoop goto-last-change helm-projectile highlight-symbol ggtags helm-gtags evil company vimish-fold autopair helm sublime-themes)))
+    (flycheck company-irony irony dtrt-indent goto-last-change highlight-symbol ggtags helm-gtags evil company vimish-fold autopair helm sublime-themes)))
  '(safe-local-variable-values
    (quote
     ((company-clang-arguments "-I/home/ben/net-snmp-code/include/")))))
@@ -15,6 +15,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
 
 ;; Me
 (setq user-full-name "Benjamin Leroux")
@@ -57,7 +58,6 @@
 (transient-mark-mode t)
 (setq x-select-enable-clipboard t)
 (show-paren-mode t)
-(setq x-select-enable-clipboard t)
 
 ;; Identation
 (setq-default tab-width 4)
@@ -87,7 +87,7 @@
 
 ;; Line numbers
 (setq linum-format "%d ")
-(global-linum-mode t)
+(add-hook 'prog-mode-hook 'linum-mode)
 
 ;; Column numbers
 (setq column-number-mode t)
@@ -107,6 +107,19 @@ buffer is not visiting a file."
 
 (global-set-key (kbd "C-x C-r") 'sudo-edit)
 
+;; Terminal
+(defun bash (buffer-name)
+  "Start a terminal and rename buffer."
+  (interactive "sBuffer name: ")
+  (ansi-term "/bin/bash")
+  (rename-buffer buffer-name t))
+
+;; Compile
+(global-set-key (kbd "<f5>") (lambda ()
+                               (interactive)
+                               (setq-local compilation-read-command nil)
+                               (call-interactively 'compile)))
+
 
 
 ;; PACKAGES
@@ -115,17 +128,17 @@ buffer is not visiting a file."
 (require 'helm)
 (require 'helm-config)
 
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to do persistent action
-(define-key helm-map (kbd "C-i")   'helm-execute-persistent-action) ; make TAB works in terminal
-(define-key helm-map (kbd "C-z")   'helm-select-action)             ; list actions using C-z
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) 
+(define-key helm-map (kbd "C-i")   'helm-execute-persistent-action) 
+(define-key helm-map (kbd "C-z")   'helm-select-action)             
 
 (setq helm-split-window-in-side-p t)
 
 (helm-autoresize-mode t)
 
-(global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-(global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "M-x")     'helm-M-x)
+(global-set-key (kbd "M-y")     'helm-show-kill-ring)
+(global-set-key (kbd "C-x b")   'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "C-c h o") 'helm-occur)
 (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
@@ -158,116 +171,40 @@ buffer is not visiting a file."
 (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
 (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
 
-;; Helm Swoop
-(require 'helm-swoop)
-
-;; Change the keybinds to whatever you like :)
-(global-set-key (kbd "M-i") 'helm-swoop)
-(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-
-;; When doing isearch, hand the word over to helm-swoop
-(define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-;; From helm-swoop to helm-multi-swoop-all
-(define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-;; When doing evil-search, hand the word over to helm-swoop
-;; (define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
-
-;; Instead of helm-multi-swoop-all, you can also use helm-multi-swoop-current-mode
-(define-key helm-swoop-map (kbd "M-m") 'helm-multi-swoop-current-mode-from-helm-swoop)
-
-;; Move up and down like isearch
-(define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
-(define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
-(define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
-(define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line)
-
-;; Save buffer when helm-multi-swoop-edit complete
-(setq helm-multi-swoop-edit-save t)
-
-;; If this value is t, split window inside the current window
-(setq helm-swoop-split-with-multiple-windows nil)
-
-;; Split direcion. 'split-window-vertically or 'split-window-horizontally
-(setq helm-swoop-split-direction 'split-window-vertically)
-
-;; If nil, you can slightly boost invoke speed in exchange for text color
-(setq helm-swoop-speed-or-color nil)
-
-
 
 ;; Autopair
 (require 'autopair)
 (autopair-global-mode t)
 
-;; Compile
-(global-set-key (kbd "<f5>") (lambda ()
-                               (interactive)
-                               (setq-local compilation-read-command nil)
-                               (call-interactively 'compile)))
-
-;; ;; Predictive Mode
-;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive")
-;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive/latex")
-;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive/misc")
-;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive/html")
-;; (add-to-list 'load-path "/home/ben/.emacs.d/predictive/texinfo")
-;; (require 'predictive)
-
-;; (setq predictive-auto-learn t
-;;       predictive-which-dict t
-;;       predictive-latex-electric-environments t)
-;; (add-hook 'LaTeX-mode-hook 'predictive-mode)
-
-;; ;; FlySpell
-;; (add-to-list 'load-path "~/.emacs.d/flyspell/")
-;; (autoload 'flyspell-mode "flyspell" "On-the-fly spelling checker." t)
-;; (autoload 'flyspell-delay-command "flyspell" "Delay on command." t)
-;; (autoload 'tex-mode-flyspell-verify "flyspell" "" t) 
-
-;; ;; AucTeX
-;; (setq TeX-auto-save t)
-;; (setq TeX-parse-self t)
-;; (setq-default TeX-master nil)
-
-;; (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-;; (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-;; (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-;; (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-;; (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
-;; (setq TeX-source-correlate-method 'synctex)
-
-;; (setq TeX-view-program-list '(("Evince" "evince %o"))
-;;       TeX-view-program-selection '((output-pdf "Evince")))
-
-;; (setq reftex-plug-into-AUCTeX t)
-
-;; (setq TeX-PDF-mode t)
-
-;; ;; Outline Mino Mode
-;; (defun turn-on-outline-minor-mode ()
-;; (outline-minor-mode 1))
-
-;; (add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
-;; (add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
-;; (setq outline-minor-mode-prefix "\C-c \C-o")
-
-;; Terminal
-(defun bash (buffer-name)
-  "Start a terminal and rename buffer."
-  (interactive "sBuffer name: ")
-  (term "/bin/bash")
-  (rename-buffer buffer-name t))
-
 ;; Vimish Fold
+(require 'vimish-fold)
 (global-set-key (kbd "C-x v f") #'vimish-fold)
 (global-set-key (kbd "C-x v v") #'vimish-fold-delete)
 
 ;; Company mode
+(require 'company)
+(setq company-dabbrev-downcase 0)
+(setq company-idle-delay 0)
 (add-hook 'after-init-hook 'global-company-mode)
 
+;; DTRT mode (guess offset)
+(require 'dtrt-indent)
+(add-hook 'c-mode-hook 'dtrt-indent-mode)
+
+;; Clean Indent
+(require 'clean-aindent-mode)
+(add-hook 'prog-mode-hook 'clean-aindent-mode)
+
+;; WS butler
+(require 'ws-butler)
+(add-hook 'c-mode-common-hook 'ws-butler-mode)
+
+;; Irony mode
+(require 'irony)
+(add-hook 'c-mode-hook 'irony-mode)
+
 ;; Goto-Last-Change
+(require 'goto-last-change)
 (global-set-key (kbd "s-g") 'goto-last-change)
 
 ;; Highlight Mode
@@ -277,7 +214,8 @@ buffer is not visiting a file."
 (global-set-key [(shift f3)] 'highlight-symbol-prev)
 (global-set-key [(meta f3)] 'highlight-symbol-query-replace)
 
-
+(require 'flycheck)
+(add-hook 'c-mode-hook 'flycheck-mode)
 
 ;; Final Message
 (message "---> .emacs loaded <---")

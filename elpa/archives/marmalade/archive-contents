@@ -3922,7 +3922,7 @@
        [(2 11 0)
 	nil "A modern list library for Emacs" single])
  (dart-mode .
-	    [(1 0 0)
+	    [(1 0 2)
 	     ((emacs
 	       (24 5))
 	      (cl-lib
