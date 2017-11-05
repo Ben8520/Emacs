@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (flycheck company-irony irony dtrt-indent goto-last-change highlight-symbol ggtags helm-gtags evil company vimish-fold autopair helm sublime-themes)))
+    (diminish powerline stickyfunc-enhance function-args flycheck company-irony irony dtrt-indent goto-last-change highlight-symbol ggtags evil company vimish-fold autopair helm sublime-themes)))
  '(safe-local-variable-values
    (quote
     ((company-clang-arguments "-I/home/ben/net-snmp-code/include/")))))
@@ -83,7 +83,6 @@
 
 ;; Display time and battery level
 (display-time-mode t)
-(display-battery-mode t)
 
 ;; Line numbers
 (setq linum-format "%d ")
@@ -91,6 +90,12 @@
 
 ;; Column numbers
 (setq column-number-mode t)
+
+;; Whitespace
+(require 'whitespace)
+(setq whitespace-style '(face empty tabs lines-tail trailing))
+(global-whitespace-mode t)
+(diminish 'global-whitespace-mode)
 
 ;; Edit files as root
 (defun sudo-edit (&optional arg)
@@ -145,36 +150,12 @@ buffer is not visiting a file."
 (global-set-key (kbd "C-c h x") 'helm-register)
 
 (helm-mode 1)
-
-;; Helm GTAGS
-(setq
- helm-gtags-ignore-case t
- helm-gtags-auto-update t
- helm-gtags-use-input-at-cursor t
- helm-gtags-pulse-at-cursor t
- helm-gtags-prefix-key "\C-cg"
- helm-gtags-suggested-key-mapping t
- )
-
-(require 'helm-gtags)
-;; Enable helm-gtags-mode
-(add-hook 'dired-mode-hook 'helm-gtags-mode)
-(add-hook 'eshell-mode-hook 'helm-gtags-mode)
-(add-hook 'c-mode-hook 'helm-gtags-mode)
-(add-hook 'c++-mode-hook 'helm-gtags-mode)
-(add-hook 'asm-mode-hook 'helm-gtags-mode)
-
-(define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
-(define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
-(define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
-(define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
-(define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-(define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
-
+(diminish 'helm-mode)
 
 ;; Autopair
 (require 'autopair)
 (autopair-global-mode t)
+(diminish 'autopair-mode)
 
 ;; Vimish Fold
 (require 'vimish-fold)
@@ -186,22 +167,38 @@ buffer is not visiting a file."
 (setq company-dabbrev-downcase 0)
 (setq company-idle-delay 0)
 (add-hook 'after-init-hook 'global-company-mode)
+(diminish 'company-mode)
 
 ;; DTRT mode (guess offset)
 (require 'dtrt-indent)
+(setq dtrt-indent-verbosity 0)
 (add-hook 'c-mode-hook 'dtrt-indent-mode)
 
 ;; Clean Indent
 (require 'clean-aindent-mode)
 (add-hook 'prog-mode-hook 'clean-aindent-mode)
 
+(require 'ggtags)
+(add-hook 'c-mode-hook 'ggtags-mode)
+(define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
+(define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
+(define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
+(define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
+(define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
+(define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
+
+(define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
+(diminish 'ggtags-mode)
+
 ;; WS butler
 (require 'ws-butler)
 (add-hook 'c-mode-common-hook 'ws-butler-mode)
+(diminish 'ws-butler-mode)
 
 ;; Irony mode
 (require 'irony)
 (add-hook 'c-mode-hook 'irony-mode)
+(diminish 'irony-mode)
 
 ;; Goto-Last-Change
 (require 'goto-last-change)
@@ -216,6 +213,31 @@ buffer is not visiting a file."
 
 (require 'flycheck)
 (add-hook 'c-mode-hook 'flycheck-mode)
+(diminish 'flycheck-mode)
+
+;; Function Args
+(fa-config-default)
+(diminish 'function-args-mode)
+
+;; Semantic Mode
+(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
+(semantic-mode 1)
+(require 'stickyfunc-enhance)
+(global-semantic-idle-summary-mode 1)
+
+;; Powerline
+(require 'powerline)
+(powerline-default-theme)
+
+;; GDB
+(setq gdb-many-windows  t
+      gdb-show-main     t)
+
+;; HS minor mode
+(add-hook 'c-mode-hook 'hs-minor-mode)
+
+;; Abbrev ??
+(diminish 'abbrev-mode)
 
 ;; Final Message
 (message "---> .emacs loaded <---")
