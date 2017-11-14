@@ -5,17 +5,13 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (diminish powerline stickyfunc-enhance function-args flycheck company-irony irony dtrt-indent goto-last-change highlight-symbol ggtags evil company vimish-fold autopair helm sublime-themes)))
- '(safe-local-variable-values
-   (quote
-    ((company-clang-arguments "-I/home/ben/net-snmp-code/include/")))))
+    (flycheck-irony ws-butler vimish-fold sublime-themes powerline highlight-symbol helm goto-last-change ggtags flycheck evil dtrt-indent diminish company-irony clean-aindent-mode autopair))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
 
 ;; Me
 (setq user-full-name "Benjamin Leroux")
@@ -162,12 +158,6 @@ buffer is not visiting a file."
 (global-set-key (kbd "C-x v f") #'vimish-fold)
 (global-set-key (kbd "C-x v v") #'vimish-fold-delete)
 
-;; Company mode
-(require 'company)
-(setq company-dabbrev-downcase 0)
-(setq company-idle-delay 0)
-(add-hook 'after-init-hook 'global-company-mode)
-(diminish 'company-mode)
 
 ;; DTRT mode (guess offset)
 (require 'dtrt-indent)
@@ -195,10 +185,41 @@ buffer is not visiting a file."
 (add-hook 'c-mode-common-hook 'ws-butler-mode)
 (diminish 'ws-butler-mode)
 
-;; Irony mode
-(require 'irony)
-(add-hook 'c-mode-hook 'irony-mode)
+;; Irony Mode
+(use-package irony
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'c-mode-hook 'irony-mode)
+  :config
+  (defun my-irony-mode-hook ()
+    (define-key irony-mode-map [remap completion-at-point]
+      'irony-completion-at-point-async)
+    (define-key irony-mode-map [remap complete-symbol]
+      'irony-completion-at-point-async))
+  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  )
 (diminish 'irony-mode)
+
+;; Company Mode
+(use-package company
+  :ensure t
+  :defer t
+  :init
+   (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (use-package company-irony :ensure t :defer t)
+  (setq
+   company-idle-delay              0
+   company-minimum-prefix-length   2
+   company-show-numbers            t
+   company-tooltip-limit           20
+   company-dabbrev-downcase        nil
+   company-backends                '((company-irony))
+   )
+  )
+(diminish 'company-mode)
 
 ;; Goto-Last-Change
 (require 'goto-last-change)
@@ -214,16 +235,8 @@ buffer is not visiting a file."
 (require 'flycheck)
 (add-hook 'c-mode-hook 'flycheck-mode)
 (diminish 'flycheck-mode)
-
-;; Function Args
-(fa-config-default)
-(diminish 'function-args-mode)
-
-;; Semantic Mode
-(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
-(semantic-mode 1)
-(require 'stickyfunc-enhance)
-(global-semantic-idle-summary-mode 1)
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 
 ;; Powerline
 (require 'powerline)
